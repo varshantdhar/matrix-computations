@@ -1,4 +1,3 @@
-# Chapter 1
 # Matrix Multiplication
 
 ## Basics and Notation
@@ -98,3 +97,201 @@ $$ Y = CXB^T \iff \text{vec}(Y) = (B \otimes C)\text{vec}(X) $$
 where $CXB^T$ costs $O(n^3)$ to evaluate while the Kronecker structure product would give an $O(n^4)$ calculation. 
 
 ## Hamiltonian and Symplectic Matrices
+
+A matrix $M \in \mathbb{R}^{2n \times 2n}$ is a $\textit{Hamiltonian matrix}$ if it has the form
+
+$$ M = \begin{bmatrix} A & G \\ F & -A^T \end{bmatrix} $$
+
+where $A, F, G \in \mathbb{R}^{n \times n}$ and $F$ and $G$ are symmetric. An equivalent definition can be given in terms of the permutation matrix
+
+$$ J = \begin{bmatrix} 0 & I_n \\ -I_n & 0 \end{bmatrix} $$
+
+where a Hamiltonian matrix $M$ satisfies $JMJ^T = -M^T$ or equivalently it saitsfies
+
+$$ M^TJ + JM = 0 $$
+
+We can show this by computing $M^T$
+
+$$ M^T = \begin{bmatrix}A^T & F^T \\ G^T & -A \end{bmatrix} $$
+
+and since $F = F^T$ and $G = G^T$ we get 
+
+$$ M^T = \begin{bmatrix} A^T & F \\ G & -A \end{bmatrix} $$
+
+thus,
+
+$$ M^TJ = \begin{bmatrix} A^T & F \\ G & -A \end{bmatrix} \begin{bmatrix} 0 & I_n \\ -I_n & 0 \end{bmatrix} = \begin{bmatrix} -F & A^T \\ A & G \end{bmatrix}$$
+
+We also get that
+
+$$ JM = \begin{bmatrix} 0 & I_n \\ -I_n & 0 \end{bmatrix} \begin{bmatrix} A & G \\ F & -A^T \end{bmatrix} = \begin{bmatrix} F & -A^T \\ -A & -G\end{bmatrix} $$
+
+which proves that $M^TJ + JM = 0$
+
+a related class of matrices are the symplectic matrices where a matrix $S \in \mathbb{R}^{2n \times 2n}$ is symplectic if
+
+$$ S^TJS = J $$
+
+If 
+
+$$S = \begin{bmatrix} S_{11} & S_{12} \\ S_{21} & S_{22} \end{bmatrix} $$
+
+where the blocks are $n$-by-$n$, then it follows that both $S_{11}^TS_{21}$ and $S_{22}^TS_{21}$ are symmetric and $S_{11}^TS_22 = I_n + S_{21}^TS_{12}$. 
+
+## Strassen Matrix Multiplication
+
+Let $A$ and $B$ be $2 \times 2$ block matrices:
+$$
+A = \begin{bmatrix} A_{11} & A_{12} \\ A_{21} & A_{22} \end{bmatrix}, \quad
+B = \begin{bmatrix} B_{11} & B_{12} \\ B_{21} & B_{22} \end{bmatrix},
+$$
+where each block (e.g., $A_{11}, B_{12}$) is itself an $n \times n$ matrix.
+
+The product $C = AB$ is given as:
+$$
+C = \begin{bmatrix} C_{11} & C_{12} \\ C_{21} & C_{22} \end{bmatrix},
+$$
+where:
+$$
+C_{11} = A_{11}B_{11} + A_{12}B_{21}, \quad
+C_{12} = A_{11}B_{12} + A_{12}B_{22},
+$$
+$$
+C_{21} = A_{21}B_{11} + A_{22}B_{21}, \quad
+C_{22} = A_{21}B_{12} + A_{22}B_{22}.
+$$
+
+### Strassen's Algorithm
+Strassen's algorithm reduces the number of multiplications from 8 to 7 by introducing 7 intermediate products, $P_1, P_2, \dots, P_7$, as follows:
+$$
+P_1 = (A_{11} + A_{22})(B_{11} + B_{22}),
+$$
+$$
+P_2 = (A_{21} + A_{22})B_{11},
+$$
+$$
+P_3 = A_{11}(B_{12} - B_{22}),
+$$
+$$
+P_4 = A_{22}(B_{21} - B_{11}),
+$$
+$$
+P_5 = (A_{11} + A_{12})B_{22},
+$$
+$$
+P_6 = (A_{21} - A_{11})(B_{11} + B_{12}),
+$$
+$$
+P_7 = (A_{12} - A_{22})(B_{21} + B_{22}).
+$$
+
+The blocks of $C$ are then computed as:
+$$
+C_{11} = P_1 + P_4 - P_5 + P_7,
+$$
+$$
+C_{12} = P_3 + P_5,
+$$
+$$
+C_{21} = P_2 + P_4,
+$$
+$$
+C_{22} = P_1 - P_2 + P_3 + P_6.
+$$
+
+### Verification of Strassen's Algorithm
+We verify that the computed $C_{11}, C_{12}, C_{21}, C_{22}$ match the standard definitions.
+
+#### $C_{11}$:
+$$
+C_{11} = P_1 + P_4 - P_5 + P_7.
+$$
+Substituting the definitions of $P_1, P_4, P_5, P_7$:
+$$
+P_1 = (A_{11} + A_{22})(B_{11} + B_{22}), \quad
+P_4 = A_{22}(B_{21} - B_{11}),
+$$
+$$
+P_5 = (A_{11} + A_{12})B_{22}, \quad
+P_7 = (A_{12} - A_{22})(B_{21} + B_{22}).
+$$
+Expanding:
+$$
+C_{11} = (A_{11}B_{11} + A_{11}B_{22} + A_{22}B_{11} + A_{22}B_{22})
++ (A_{22}B_{21} - A_{22}B_{11})
+- (A_{11}B_{22} + A_{12}B_{22})
++ (A_{12}B_{21} + A_{12}B_{22} - A_{22}B_{21} - A_{22}B_{22}).
+$$
+Combine like terms:
+$$
+C_{11} = A_{11}B_{11} + A_{12}B_{21},
+$$
+which matches the standard definition.
+
+#### $C_{12}$:
+$$
+C_{12} = P_3 + P_5.
+$$
+Substituting $P_3$ and $P_5$:
+$$
+P_3 = A_{11}(B_{12} - B_{22}), \quad
+P_5 = (A_{11} + A_{12})B_{22}.
+$$
+Expanding:
+$$
+C_{12} = A_{11}B_{12} - A_{11}B_{22} + A_{11}B_{22} + A_{12}B_{22}.
+$$
+Simplify:
+$$
+C_{12} = A_{11}B_{12} + A_{12}B_{22},
+$$
+which matches the standard definition.
+
+#### $C_{21}$:
+$$
+C_{21} = P_2 + P_4.
+$$
+Substituting $P_2$ and $P_4$:
+$$
+P_2 = (A_{21} + A_{22})B_{11}, \quad
+P_4 = A_{22}(B_{21} - B_{11}).
+$$
+Expanding:
+$$
+C_{21} = A_{21}B_{11} + A_{22}B_{11} + A_{22}B_{21} - A_{22}B_{11}.
+$$
+Simplify:
+$$
+C_{21} = A_{21}B_{11} + A_{22}B_{21},
+$$
+which matches the standard definition.
+
+#### $C_{22}$:
+$$
+C_{22} = P_1 - P_2 + P_3 + P_6.
+$$
+Substituting $P_1, P_2, P_3, P_6$:
+$$
+P_1 = (A_{11} + A_{22})(B_{11} + B_{22}), \quad
+P_2 = (A_{21} + A_{22})B_{11},
+$$
+$$
+P_3 = A_{11}(B_{12} - B_{22}), \quad
+P_6 = (A_{21} - A_{11})(B_{11} + B_{12}).
+$$
+Expanding:
+$$
+C_{22} = (A_{11}B_{11} + A_{11}B_{22} + A_{22}B_{11} + A_{22}B_{22})
+- (A_{21}B_{11} + A_{22}B_{11})
++ (A_{11}B_{12} - A_{11}B_{22})
++ (A_{21}B_{11} + A_{21}B_{12} - A_{11}B_{11} - A_{11}B_{12}).
+$$
+Combine like terms:
+$$
+C_{22} = A_{21}B_{12} + A_{22}B_{22},
+$$
+which matches the standard definition.
+
+Suppose $n = 2m$, counting adds and multiplies with conventional matrix multiplication involves $(2m)^3$ multiplies and $(2m)^3-(2m)^2$ adds. Strassen's algorithm multiplies $7m^3$ and $7m^3 + 11m^2$ adds. If $m >> 1$ then the Strassen method involves about $7/8$ the arithmetic which works much better
+
+Additionally, we can recur the Strassen idea, i.e. we can apply the Strassen algorithm to each of the half-sized block multiplications associated with the $P_i$
